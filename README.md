@@ -1,49 +1,20 @@
-# tlinalg-blas-rs
+# tlinalg-blas-rs — retired
 
-LAPACK/BLAS-backed implementation of the `tlinalg` tensor-free numerical interface
-([`tlinalg-traits`](https://github.com/tensor4all/tlinalg-rs)).
+This repository is **retired**. The `tlinalg-blas` crate was merged into
+[tensor4all/tlinalg-rs](https://github.com/tensor4all/tlinalg-rs) as a sibling crate
+(`crates/tlinalg-blas`) together with this repository's history on 2026-10-05, and all further
+development happens there. Do not open issues or pull requests here.
 
-## Crates
-
-| Crate | Role |
+| | |
 |---|---|
-| `tlinalg-blas` | The LAPACK/BLAS implementation: vendor calls and their argument marshalling, behind the same contract as the faer-backed implementation. |
+| Crate | [`tlinalg-rs/crates/tlinalg-blas`](https://github.com/tensor4all/tlinalg-rs/tree/main/crates/tlinalg-blas) |
+| Issues | [tensor4all/tlinalg-rs/issues](https://github.com/tensor4all/tlinalg-rs/issues) |
+| Merge | `tlinalg-rs` commit `543261a`; this repository's final commit `e678bfd` is an ancestor of `tlinalg-rs` `main` |
+| Superseded README | [at the final commit](https://github.com/tensor4all/tlinalg-blas-rs/blob/e678bfd/README.md) |
 
-## Contract
-
-Like the faer-backed implementation, this crate owns the kernels and nothing else. The host supplies
-borrowed operands, a `Parallel` token and a host-resolved `LanePlan`; the host keeps policy, error
-classification, placement, allocation and session entry.
-
-Two properties are deliberate here:
-
-- **Read-only threading.** LAPACK and BLAS own their own parallelism, so the `Parallel` token is
-  accepted for interface parity and **ignored**, no Rayon fan-out is created around a vendor batch,
-  and the batch loops are serial.
-- **No scratch.** The packed-LU family takes no pooled buffers, so it does not need `Workspace`.
-
-`validate_pivots` is public so a host can validate a whole batch before splitting it into chunks: an
-invalid pivot must be reported before any chunk mutates its output.
-
-## Build and test
-
-```sh
-cargo fmt --all -- --check
-cargo clippy -j 16 --all-targets --features link-openblas -- -D warnings
-cargo test -j 16 --workspace --features link-openblas
-```
-
-`link-openblas` exists only so this crate has an executable check of its own; it builds OpenBLAS from
-source through `openblas-src`. Tenferro selects the vendor and the injected-symbol path itself, so
-the feature is not part of the implementation contract.
-
-## Status
-
-Only the packed-LU family (`lu_factor`, `lu_solve_prepared`, `lu_factor_solve`) is extracted so far.
-Full-pivot LU, ordinary LU/solve, triangular solve, Cholesky, QR, `eigh`, `eig` and the Householder
-family are later slices of [tenferro-rs#1956](https://github.com/tensor4all/tenferro-rs/issues/1956).
-
-Nothing is published; `publish = false` until the interface and the package names settle.
+The crate's role is unchanged: the LAPACK/BLAS provider of the tensor-free numerical interface,
+with vendor-owned threading and a serial batch loop. Its scope has since grown from the packed-LU
+family to every remaining LAPACK family, in `tlinalg-rs`.
 
 ## License
 
